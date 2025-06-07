@@ -43,8 +43,8 @@ android.minapi = 21
 # (str) Android NDK version to use
 android.ndk = 23b
 
-# (int) Android SDK version to use
-android.sdk = 30
+# (int) Android SDK version to use (deprecated, now handled automatically)
+#android.sdk = 30
 
 # (str) Android entry point, default is ok for Kivy-based app
 android.entrypoint = org.kivy.android.PythonActivity
@@ -74,7 +74,7 @@ android.entrypoint = org.kivy.android.PythonActivity
 
 # (str) Bootstrap to use for android builds
 # Run `buildozer android debug` to see available bootstraps.
-android.bootstrap = sdl2
+p4a.bootstrap = sdl2
 
 # (int) port number to specify an explicit --port= p4a argument (eg: --port=1024)
 #p4a.port =
