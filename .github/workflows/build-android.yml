@@ -24,7 +24,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install buildozer kivy[base] kivymd cython
         sudo apt-get update
-        sudo apt-get install -y git zip unzip openjdk-8-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+        sudo apt-get install -y git zip unzip openjdk-8-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo6 cmake libffi-dev libssl-dev
     
     - name: Build APK
       run: |
