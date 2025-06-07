@@ -7,24 +7,54 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+# Set permissions for GITHUB_TOKEN
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.9'
+        python-version: '3.11'
+        cache: 'pip'
     
-    - name: Install dependencies
+    - name: Cache pip dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements*.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install Python dependencies
       run: |
-        python -m pip install --upgrade pip
+        python -m pip install --upgrade pip setuptools wheel
         pip install buildozer kivy[base] kivymd cython
+        if [ -f requirements_android.txt ]; then pip install -r requirements_android.txt; fi
+    
+    - name: Install system dependencies
+      run: |
         sudo apt-get update
-        sudo apt-get install -y git zip unzip openjdk-8-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo6 cmake libffi-dev libssl-dev
+        sudo apt-get install -y \
+          git zip unzip openjdk-11-jdk python3-pip \
+          autoconf automake libtool pkg-config \
+          zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo6 \
+          cmake libffi-dev libssl-dev build-essential \
+          libgstreamer1.0-dev gstreamer1.0-plugins-base \
+          gstreamer1.0-plugins-good gstreamer1.0-plugins-bad \
+          gstreamer1.0-plugins-ugly libgstreamer-plugins-base1.0-dev
         
     - name: Setup Android SDK and NDK
       run: |
@@ -99,9 +129,24 @@ jobs:
         echo "$ANDROID_SDK_ROOT/build-tools/30.0.3" >> $GITHUB_PATH
         echo "$ANDROID_SDK_ROOT/tools/bin" >> $GITHUB_PATH
     
-    - name: Build APK
-      run: |
-        buildozer android debug
+一下    - name: Build APK
+jiancha      run: |
+        # Set network timeout and retry configurations
+        export PIP_TIMEOUT=300
+        export PIP_RETRIES=5
+        export PIP_DEFAULT_TIMEOUT=300
+        
+        # Configure buildozer with network retry
+        buildozer android debug || {
+          echo "First build attempt failed, retrying..."
+          sleep 30
+          buildozer android debug || {
+            echo "Second build attempt failed, retrying with clean..."
+            buildozer android clean
+            sleep 30
+            buildozer android debug
+          }
+        }
     
     - name: Upload APK
       uses: actions/upload-artifact@v4
