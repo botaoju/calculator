@@ -56,100 +56,194 @@ jobs:
           gstreamer1.0-plugins-good gstreamer1.0-plugins-bad \
           gstreamer1.0-plugins-ugly libgstreamer-plugins-base1.0-dev
         
+    - name: Cache Android SDK
+      uses: actions/cache@v4
+      with:
+        path: ~/.buildozer/android/platform
+        key: ${{ runner.os }}-android-sdk-ndk-${{ hashFiles('buildozer.spec') }}
+        restore-keys: |
+          ${{ runner.os }}-android-sdk-ndk-
+    
     - name: Setup Android SDK and NDK
       run: |
+        set -e  # Exit on any error
+        
+        # Set Java environment
+        export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+        export PATH=$JAVA_HOME/bin:$PATH
+        
         mkdir -p ~/.buildozer/android/platform
         cd ~/.buildozer/android/platform
         
-        # Download Android SDK Command Line Tools
-        for i in {1..3}; do
-          if wget --timeout=30 --tries=3 -q https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip; then
-            break
-          elif curl -L --connect-timeout 30 --max-time 300 -o commandlinetools-linux-8512546_latest.zip https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip; then
-            break
-          else
-            echo "Download attempt $i failed, retrying..."
-            sleep 10
+        # Check if SDK already exists (from cache)
+        if [ ! -d "android-sdk" ]; then
+          echo "Setting up Android SDK..."
+          
+          # Download Android SDK Command Line Tools with retry
+          SDK_URL="https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip"
+          for i in {1..3}; do
+            if wget --timeout=60 --tries=3 -q "$SDK_URL"; then
+              break
+            elif curl -L --connect-timeout 60 --max-time 600 -o commandlinetools-linux-9477386_latest.zip "$SDK_URL"; then
+              break
+            else
+              echo "SDK download attempt $i failed, retrying..."
+              sleep 10
+            fi
+          done
+          
+          if [ ! -f commandlinetools-linux-9477386_latest.zip ]; then
+            echo "Failed to download Android SDK tools after 3 attempts"
+            exit 1
           fi
-        done
-        
-        if [ ! -f commandlinetools-linux-8512546_latest.zip ]; then
-          echo "Failed to download Android SDK tools after 3 attempts"
-          exit 1
+          
+          unzip -q commandlinetools-linux-9477386_latest.zip
+          mkdir -p android-sdk/cmdline-tools/latest
+          mkdir -p android-sdk/tools/bin
+          mv cmdline-tools/* android-sdk/cmdline-tools/latest/
+          
+          # Create symlinks for buildozer compatibility
+          ln -sf ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
+          ln -sf ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/avdmanager ~/.buildozer/android/platform/android-sdk/tools/bin/avdmanager
+          
+          mkdir -p android-sdk/tools/lib
+          chmod +x android-sdk/cmdline-tools/latest/bin/*
+          
+          rm -f commandlinetools-linux-9477386_latest.zip
         fi
         
-        unzip -q commandlinetools-linux-8512546_latest.zip
-        mkdir -p android-sdk/cmdline-tools/latest
-        mkdir -p android-sdk/tools/bin
-        mv cmdline-tools/* android-sdk/cmdline-tools/latest/
-        
-        # Create absolute symlinks for buildozer compatibility
-        ln -sf ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
-        ln -sf ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/avdmanager ~/.buildozer/android/platform/android-sdk/tools/bin/avdmanager
-        
-        # Also create the tools directory structure that buildozer expects
-        mkdir -p android-sdk/tools/lib
-        
-        # Make sure the tools are executable
-        chmod +x android-sdk/cmdline-tools/latest/bin/*
-        
+        # Set environment variables
         export ANDROID_SDK_ROOT=~/.buildozer/android/platform/android-sdk
         export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/tools/bin
-        yes | sdkmanager --licenses
-        sdkmanager "build-tools;30.0.3" "platforms;android-30" "platform-tools"
         
-        # Download and setup NDK 25b (minimum required version)
-        echo "Downloading Android NDK 25b..."
-        for i in {1..3}; do
-          if wget --timeout=60 --tries=3 -q https://dl.google.com/android/repository/android-ndk-r25b-linux.zip; then
-            break
-          elif curl -L --connect-timeout 60 --max-time 600 -o android-ndk-r25b-linux.zip https://dl.google.com/android/repository/android-ndk-r25b-linux.zip; then
-            break
-          else
-            echo "NDK download attempt $i failed, retrying..."
-            sleep 15
+        # Accept licenses and install SDK components
+        yes | sdkmanager --licenses || true
+        sdkmanager "build-tools;33.0.2" "platforms;android-33" "platform-tools"
+        
+        # Setup NDK if not cached
+        if [ ! -d "android-ndk" ]; then
+          echo "Setting up Android NDK 25c..."
+          NDK_URL="https://dl.google.com/android/repository/android-ndk-r25c-linux.zip"
+          for i in {1..3}; do
+            if wget --timeout=120 --tries=3 -q "$NDK_URL"; then
+              break
+            elif curl -L --connect-timeout 120 --max-time 900 -o android-ndk-r25c-linux.zip "$NDK_URL"; then
+              break
+            else
+              echo "NDK download attempt $i failed, retrying..."
+              sleep 15
+            fi
+          done
+          
+          if [ ! -f android-ndk-r25c-linux.zip ]; then
+            echo "Failed to download Android NDK after 3 attempts"
+            exit 1
           fi
-        done
-        
-        if [ ! -f android-ndk-r25b-linux.zip ]; then
-          echo "Failed to download Android NDK after 3 attempts"
-          exit 1
+          
+          echo "Extracting NDK..."
+          unzip -q android-ndk-r25c-linux.zip
+          mv android-ndk-r25c android-ndk
+          rm -f android-ndk-r25c-linux.zip
         fi
         
-        echo "Extracting NDK..."
-        unzip -q android-ndk-r25b-linux.zip
-        mv android-ndk-r25b android-ndk
-        
+        # Set NDK environment variables
         export ANDROID_NDK_ROOT=~/.buildozer/android/platform/android-ndk
         
+        # Export to GitHub environment
         echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
         echo "ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT" >> $GITHUB_ENV
         echo "ANDROIDNDK=$ANDROID_NDK_ROOT" >> $GITHUB_ENV
+        echo "JAVA_HOME=$JAVA_HOME" >> $GITHUB_ENV
         echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
-        echo "$ANDROID_SDK_ROOT/build-tools/30.0.3" >> $GITHUB_PATH
+        echo "$ANDROID_SDK_ROOT/build-tools/33.0.2" >> $GITHUB_PATH
         echo "$ANDROID_SDK_ROOT/tools/bin" >> $GITHUB_PATH
+        echo "$JAVA_HOME/bin" >> $GITHUB_PATH
     
-一下    - name: Build APK
-jiancha      run: |
-        # Set network timeout and retry configurations
+    - name: Cache buildozer global
+      uses: actions/cache@v4
+      with:
+        path: ~/.buildozer
+        key: ${{ runner.os }}-buildozer-global-${{ hashFiles('buildozer.spec') }}
+        restore-keys: |
+          ${{ runner.os }}-buildozer-global-
+    
+    - name: Cache buildozer local
+      uses: actions/cache@v4
+      with:
+        path: .buildozer
+        key: ${{ runner.os }}-buildozer-local-${{ hashFiles('buildozer.spec', '**/*.py') }}
+        restore-keys: |
+          ${{ runner.os }}-buildozer-local-
+    
+    - name: Build APK
+      run: |
+        set -e
+        
+        # Set network and build configurations
         export PIP_TIMEOUT=300
         export PIP_RETRIES=5
         export PIP_DEFAULT_TIMEOUT=300
+        export GRADLE_OPTS="-Xmx2048m -Dorg.gradle.daemon=false"
+        export ANDROID_COMPILE_SDK=33
+        export ANDROID_BUILD_TOOLS=33.0.2
         
-        # Configure buildozer with network retry
-        buildozer android debug || {
-          echo "First build attempt failed, retrying..."
-          sleep 30
-          buildozer android debug || {
-            echo "Second build attempt failed, retrying with clean..."
-            buildozer android clean
-            sleep 30
-            buildozer android debug
-          }
+        # Verify environment
+        echo "Python version: $(python --version)"
+        echo "Java version: $(java -version 2>&1 | head -1)"
+        echo "Android SDK: $ANDROID_SDK_ROOT"
+        echo "Android NDK: $ANDROID_NDK_ROOT"
+        
+        # Build with retry mechanism
+        build_apk() {
+          echo "Starting APK build..."
+          buildozer android debug
         }
+        
+        # Try build with retries
+        if ! build_apk; then
+          echo "First build attempt failed, cleaning and retrying..."
+          buildozer android clean
+          sleep 30
+          
+          if ! build_apk; then
+            echo "Second build attempt failed, full clean and retry..."
+            rm -rf .buildozer/android/platform/build-*
+            rm -rf .buildozer/android/app
+            sleep 30
+            build_apk
+          fi
+        fi
+        
+        echo "Build completed successfully!"
+    
+    - name: List build outputs
+      run: |
+        echo "Build outputs:"
+        find . -name "*.apk" -type f -exec ls -la {} \;
+        
+        # Verify APK exists
+        if [ ! -f bin/*.apk ]; then
+          echo "Error: No APK file found in bin/ directory"
+          exit 1
+        fi
     
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: calculator-apk
-        path: bin/*.apk
+        name: calculator-apk-${{ github.run_number }}
+        path: |
+          bin/*.apk
+          buildozer.spec
+        retention-days: 30
+        if-no-files-found: error
+    
+    - name: Upload build logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-logs-${{ github.run_number }}
+        path: |
+          .buildozer/android/platform/build-*/logs/
+          .buildozer/android/logs/
+        retention-days: 7
+        if-no-files-found: ignore
