@@ -50,14 +50,21 @@ jobs:
         
         unzip -q commandlinetools-linux-8512546_latest.zip
         mkdir -p android-sdk/cmdline-tools/latest
+        mkdir -p android-sdk/tools/bin
         mv cmdline-tools/* android-sdk/cmdline-tools/latest/
+        
+        # Create symlinks for buildozer compatibility
+        ln -s ../cmdline-tools/latest/bin/sdkmanager android-sdk/tools/bin/sdkmanager
+        ln -s ../cmdline-tools/latest/bin/avdmanager android-sdk/tools/bin/avdmanager
+        
         export ANDROID_SDK_ROOT=~/.buildozer/android/platform/android-sdk
-        export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin
+        export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/tools/bin
         yes | sdkmanager --licenses
         sdkmanager "build-tools;30.0.3" "platforms;android-30" "platform-tools"
         echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
         echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
         echo "$ANDROID_SDK_ROOT/build-tools/30.0.3" >> $GITHUB_PATH
+        echo "$ANDROID_SDK_ROOT/tools/bin" >> $GITHUB_PATH
     
     - name: Build APK
       run: |
