@@ -1,23 +1,31 @@
 # Android APK构建依赖
+# Android构建依赖文件
 # 安装命令: pip install -r requirements_android.txt
 
-# 核心框架
-kivy[base]>=2.1.0
-kivymd>=1.1.1
+# 核心框架 - 使用固定版本以确保兼容性
+kivy==2.1.0
+kivymd==1.1.1
 
-# 构建工具
-buildozer>=1.4.0
-cython>=0.29.0
+# 构建工具 - 使用稳定版本
+buildozer==1.5.0
+cython==0.29.36
 
 # Python-for-Android依赖
-python-for-android>=2023.6.0
+python-for-android==2023.6.0
+pyjnius==1.4.2
+plyer==2.1.0
+
+# Android特定包
+android
 
 # 其他工具
-colorama>=0.4.0
-sh>=1.14.0
-appdirs>=1.4.0
-jinja2>=3.0.0
+colorama==0.4.6
+sh==1.14.3
+appdirs==1.4.4
+jinja2==3.1.2
+setuptools>=40.0.0
+wheel
 
 # 开发工具（可选）
-pillow>=8.0.0  # 图像处理
-requests>=2.25.0  # 网络请求
+pillow==9.5.0  # 图像处理
+requests==2.31.0  # 网络请求

@@ -1,6 +1,160 @@
-# 高级Python计算器
+# Calculator App 🧮
 
-一个功能完整的图形界面计算器，使用Python和tkinter构建。
+A modern, feature-rich scientific calculator built with Python, Kivy, and KivyMD. This app provides a beautiful Material Design interface with comprehensive mathematical functions.
+
+## ✨ Features
+
+- **Basic Operations**: Addition, subtraction, multiplication, division
+- **Scientific Functions**: Trigonometric, logarithmic, exponential functions
+- **Advanced Features**: Memory functions, history, parentheses support
+- **Modern UI**: Material Design interface with dark/light theme support
+- **Cross-Platform**: Runs on Android, iOS, Windows, macOS, and Linux
+- **Responsive Design**: Adapts to different screen sizes
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Python 3.8 or higher
+- pip package manager
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/botaoju/calculator.git
+   cd calculator
+   ```
+
+2. **Create a virtual environment**
+   ```bash
+   python -m venv venv
+   
+   # On Windows
+   venv\Scripts\activate
+   
+   # On macOS/Linux
+   source venv/bin/activate
+   ```
+
+3. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Run the application**
+   ```bash
+   python main.py
+   ```
+
+## 🔧 Development Setup
+
+### Install Development Dependencies
+
+```bash
+pip install -e ".[dev,security]"
+```
+
+### Code Quality Tools
+
+This project uses several tools to maintain code quality:
+
+- **Black**: Code formatting
+- **isort**: Import sorting
+- **flake8**: Linting
+- **mypy**: Type checking
+- **pylint**: Advanced linting
+- **bandit**: Security scanning
+- **safety**: Dependency vulnerability scanning
+
+### Running Quality Checks
+
+```bash
+# Format code
+black .
+isort .
+
+# Lint code
+flake8 .
+pylint **/*.py
+
+# Type checking
+mypy .
+
+# Security checks
+bandit -r .
+safety check
+```
+
+## 📱 Building for Android
+
+### Prerequisites
+
+- Java Development Kit (JDK) 11
+- Android SDK
+- Android NDK 25c
+- Buildozer
+
+### Build Steps
+
+1. **Install Buildozer**
+   ```bash
+   pip install buildozer
+   ```
+
+2. **Build APK**
+   ```bash
+   buildozer android debug
+   ```
+
+3. **Build Release APK**
+   ```bash
+   buildozer android release
+   ```
+
+### GitHub Actions
+
+This project includes automated CI/CD pipelines:
+
+- **Build Android APK**: Automatically builds APK on push to main branch
+- **Security & Quality Checks**: Runs code quality and security scans
+
+## 🏗️ Project Structure
+
+```
+calculator/
+├── .github/
+│   └── workflows/          # GitHub Actions workflows
+├── main.py                 # Main application entry point
+├── buildozer.spec         # Buildozer configuration
+├── requirements.txt       # Python dependencies
+├── pyproject.toml        # Modern Python project configuration
+├── .gitignore            # Git ignore rules
+├── .flake8               # Flake8 configuration
+└── README.md             # This file
+```
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow these steps:
+
+1. **Fork the repository**
+2. **Create a feature branch**
+3. **Make your changes**
+4. **Run quality checks**
+5. **Commit your changes**
+6. **Push to your branch**
+7. **Open a Pull Request**
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🙏 Acknowledgments
+
+- [Kivy](https://kivy.org/) - Amazing cross-platform framework
+- [KivyMD](https://kivymd.readthedocs.io/) - Beautiful Material Design components
+- [Material Design](https://material.io/) - Design system inspiration
 
 ## 功能特点
 

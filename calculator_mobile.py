@@ -1,20 +1,34 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-移动端计算器 - 适配Android平台
-基于Kivy框架开发，支持触摸操作
+Mobile Calculator - Android Platform Optimized.
+
+A scientific calculator app built with Kivy framework,
+optimized for touch operations on mobile devices.
+
+Features:
+- Basic arithmetic operations
+- Scientific functions
+- History tracking
+- Customizable decimal precision
+- Material Design inspired UI
+
+Author: Calculator App Team
+License: MIT
 """
 
+import math
+import re
+from typing import Any, List, Optional, Union
+
 from kivy.app import App
+from kivy.core.window import Window
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
+from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.spinner import Spinner
-from kivy.core.window import Window
-import math
-import re
 
 class CalculatorApp(App):
     def build(self):

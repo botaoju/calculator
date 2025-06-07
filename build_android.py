@@ -38,10 +38,10 @@ def install_dependencies():
     print("\n📦 安装构建依赖...")
     
     dependencies = [
-        'buildozer',
-        'kivy[base]',
-        'kivymd',
-        'cython'
+        'buildozer==1.5.0',
+        'kivy==2.1.0',
+        'kivymd==1.1.1',
+        'cython==0.29.36'
     ]
     
     for dep in dependencies:

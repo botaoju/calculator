@@ -1,7 +1,7 @@
 [app]
 
 # (str) Title of your application
-title = 科学计算器
+title = Calculator
 
 # (str) Package name
 package.name = calculator
@@ -20,7 +20,7 @@ version = 1.0
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,kivy,kivymd,pyjnius,plyer
+requirements = python3,kivy==2.1.0,kivymd==1.1.1,pyjnius,plyer,android
 
 # (list) Garden requirements
 #garden_requirements =
@@ -176,19 +176,22 @@ orientation = portrait
 fullscreen = 0
 
 # (int) Target Android API, should be as high as possible.
-android.api = 33
+android.api = 31
 
 # (int) Minimum API your APK will support.
 android.minapi = 21
 
 # (str) Android NDK version to use
-android.ndk = 25c
+android.ndk = 23c
 
 # (int) Android SDK version to use (deprecated, now handled automatically)
 #android.sdk = 30
 
 # (str) Android entry point, default is ok for Kivy-based app
 android.entrypoint = org.kivy.android.PythonActivity
+
+# (list) Android application permissions
+android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE
 
 # (str) Full name including package path of the Java class that implements Android Activity
 # use that parameter together with android.entrypoint to set custom Java class instead of PythonActivity
