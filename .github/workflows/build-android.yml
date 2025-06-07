@@ -41,7 +41,7 @@ jobs:
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip setuptools wheel
-        pip install buildozer kivy[base] kivymd cython
+        pip install buildozer==1.5.0 kivy==2.1.0 kivymd==1.1.1 cython==0.29.36
         if [ -f requirements_android.txt ]; then pip install -r requirements_android.txt; fi
     
     - name: Install system dependencies
@@ -118,16 +118,16 @@ jobs:
         
         # Accept licenses and install SDK components
         yes | sdkmanager --licenses || true
-        sdkmanager "build-tools;33.0.2" "platforms;android-33" "platform-tools"
+        sdkmanager "build-tools;31.0.0" "platforms;android-31" "platform-tools"
         
         # Setup NDK if not cached
         if [ ! -d "android-ndk" ]; then
-          echo "Setting up Android NDK 25c..."
-          NDK_URL="https://dl.google.com/android/repository/android-ndk-r25c-linux.zip"
+          echo "Setting up Android NDK 23c..."
+          NDK_URL="https://dl.google.com/android/repository/android-ndk-r23c-linux.zip"
           for i in {1..3}; do
             if wget --timeout=120 --tries=3 -q "$NDK_URL"; then
               break
-            elif curl -L --connect-timeout 120 --max-time 900 -o android-ndk-r25c-linux.zip "$NDK_URL"; then
+            elif curl -L --connect-timeout 120 --max-time 900 -o android-ndk-r23c-linux.zip "$NDK_URL"; then
               break
             else
               echo "NDK download attempt $i failed, retrying..."
@@ -135,15 +135,15 @@ jobs:
             fi
           done
           
-          if [ ! -f android-ndk-r25c-linux.zip ]; then
+          if [ ! -f android-ndk-r23c-linux.zip ]; then
             echo "Failed to download Android NDK after 3 attempts"
             exit 1
           fi
           
           echo "Extracting NDK..."
-          unzip -q android-ndk-r25c-linux.zip
-          mv android-ndk-r25c android-ndk
-          rm -f android-ndk-r25c-linux.zip
+          unzip -q android-ndk-r23c-linux.zip
+          mv android-ndk-r23c android-ndk
+          rm -f android-ndk-r23c-linux.zip
         fi
         
         # Set NDK environment variables
@@ -184,8 +184,8 @@ jobs:
         export PIP_RETRIES=5
         export PIP_DEFAULT_TIMEOUT=300
         export GRADLE_OPTS="-Xmx2048m -Dorg.gradle.daemon=false"
-        export ANDROID_COMPILE_SDK=33
-        export ANDROID_BUILD_TOOLS=33.0.2
+        export ANDROID_COMPILE_SDK=31
+        export ANDROID_BUILD_TOOLS=31.0.0
         
         # Verify environment
         echo "Python version: $(python --version)"
