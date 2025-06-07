@@ -30,7 +30,24 @@ jobs:
       run: |
         mkdir -p ~/.buildozer/android/platform
         cd ~/.buildozer/android/platform
-        wget -q https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip
+        
+        # Try multiple download methods with retries
+        for i in {1..3}; do
+          if wget --timeout=30 --tries=3 -q https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip; then
+            break
+          elif curl -L --connect-timeout 30 --max-time 300 -o commandlinetools-linux-8512546_latest.zip https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip; then
+            break
+          else
+            echo "Download attempt $i failed, retrying..."
+            sleep 10
+          fi
+        done
+        
+        if [ ! -f commandlinetools-linux-8512546_latest.zip ]; then
+          echo "Failed to download Android SDK tools after 3 attempts"
+          exit 1
+        fi
+        
         unzip -q commandlinetools-linux-8512546_latest.zip
         mkdir -p android-sdk/cmdline-tools/latest
         mv cmdline-tools/* android-sdk/cmdline-tools/latest/
