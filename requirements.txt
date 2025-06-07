@@ -1,0 +1,11 @@
+# Python计算器项目依赖
+# 安装命令: pip install -r requirements.txt
+
+# 打包工具
+pyinstaller>=5.0
+
+# GUI库 (通常Python自带，但某些环境可能需要)
+# tkinter  # 通常不需要单独安装
+
+# 数学计算库 (通常Python自带)
+# math  # 内置库
